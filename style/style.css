@@ -1,0 +1,69 @@
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+#map {
+  z-index: -5;
+  background-color:rgba(7, 167, 185, 0.15);
+  border-radius: 100px;
+  overflow: hidden;
+  display: flex;
+  align-self: center;
+  position:relative;
+  width: 50vw !important; 
+  height: 60vh;
+}
+.filter{
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(29, 29, 29, 0.641);
+}
+.bg{
+  
+  height: 100vh;
+  width: 100vw;
+  background-image: url("/assets/bg.jpg");
+}
+.textito{
+  height: 30px;
+  width: 20vw;
+  margin: 10px 10px 10px 10px ;
+  background-color: rgba(7, 167, 185, 0.15 );
+  border-width: 2px;
+  border-color: rgba(159, 159, 159, 0.372);
+  border-radius: 10px;
+  text-align: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+}
+#frm{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 30px;
+}
+.botoncito{
+  width: 15vw;
+  height: 30px;
+  border-radius: 10px;
+  border-width: 2px;
+  border-color: rgba(159, 159, 159, 0.372);
+  background-color: aliceblue;
+  color: rgba(7, 167, 185, 0.703);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 6px;
+}
+.title{
+  color: rgba(7, 167, 185, 0.703);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 6px;
+}
