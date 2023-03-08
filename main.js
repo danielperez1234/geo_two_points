@@ -6,15 +6,17 @@ import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {OSM, Vector as VectorSource,XYZ} from 'ol/source.js';
 import { fromLonLat, transform } from 'ol/proj';
 import {getBottomLeft,getBottomRight,getTopLeft,getTopRight} from 'ol/extent';
-import { Point } from 'ol/geom';
+import { Circle, Point } from 'ol/geom';
 import {getVectorContext} from 'ol/render.js';
 import {easeOut} from 'ol/easing.js';
 import {unByKey} from 'ol/Observable.js';
-import {Circle as CircleStyle, Stroke, Style} from 'ol/style.js';
-
+import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style.js';
+import {  MouseWheelZoom } from 'ol/interaction';
 
 const button =document.getElementById("botoncito");
 const mapita = document.getElementById("map");
+const nameHolder = document.getElementById("Nombre");
+const nameValue = document.getElementById("name");
 button.addEventListener("click",function (){
   const lonText = document.getElementById("lon");
   const latText = document.getElementById("lat");
@@ -30,7 +32,9 @@ button.addEventListener("click",function (){
   console.log(newCords);
   var isIn= coordValidation(newCords);
   if(isIn){
-  onRequestHandler(newCords);
+    ingresada=false;
+  addDotAsyncNew(newCords,'blue');
+  nameHolder.appendChild( document.createTextNode(nameValue.value))
 
 }else{
   mapita.style.zIndex=-5;
@@ -39,14 +43,19 @@ button.addEventListener("click",function (){
 })
 // variable de async
 var positionLocal = false;
+var ingresada= false;
 var limits = [0.0,0.0,0.0,0.0];
 ///
 const view = new View({
+  
   center: [0,0],
   zoom:13,
   minZoom: 13,
+  
+  
 })
-const source = new VectorSource({
+const 
+source = new VectorSource({
 
 });
 const vector = new VectorLayer({
@@ -58,12 +67,13 @@ const layer = new TileLayer({
     })
 });
 var map = new Map({
+  
   target: 'map',
   layers: [ layer
     ,vector
   ],
   view: view,
- 
+ interactions:[new MouseWheelZoom()],
 });
 
 
@@ -84,7 +94,7 @@ geolocation.on("change:position", function () {
       zoom: 13,}
     )
   )
-  console.log(map.getView().getZoom());
+  ///console.log(map.getView().getZoom());
   const projection = map.getView().getProjection();
   // Calculate Edges
   const extent = map.getView().calculateExtent(map.getSize());
@@ -97,18 +107,16 @@ const topRight = (getTopRight(extent, projection));
 console.log(position)
 
   //Add the local feature
-  onRequestHandler(position);
-  onRequestHandler(bottomLeft);
-  onRequestHandler(bottomRight);
-  onRequestHandler(topLeft);
-  onRequestHandler(topRight);
+  positionLocal = false
+  addDotAsync(position,'red');
+ 
     limits=[
       topLeft[0],
       topLeft[1],
       bottomRight[0],
       bottomRight[1]
     ] 
-    console.log((limits));
+    //console.log((limits));
 });
 
  function coordValidation(coordinate) {
@@ -128,13 +136,40 @@ console.log(position)
 }
 }
 //set the flashing point
-function addCityFeature(position) {
-  addFromLonLarFeature(position);
-  window.setInterval(addFromLonLarFeature(position), 5000);
-}
-function addFromLonLarFeature(position) {
+function geoFeature(position) {
   const geom = new Point(position);
+  addFromLonLarFeature(geom);
+  window.setInterval(addFromLonLarFeature(geom), 5000);
+  
+}
+function addFromLonLarFeature(geom) {
+  
   const feature = new Feature(geom);
+  source.addFeature(feature);
+  
+}
+
+
+function geoFeature2(position,color) {
+  addFromLonLarFeature2(position,color);
+  window.setInterval(addFromLonLarFeature2(position,color), 5000);
+}
+function addFromLonLarFeature2(position,color) {
+  const geom = new Point(position);
+  const st =  new Style({
+    image: new CircleStyle(
+      {
+        fill: new Fill({
+          color: color
+        }),
+        radius:6
+      }
+    )
+  })
+  
+  const feature = new Feature(geom);
+  feature.setStyle(st)
+
   source.addFeature(feature);
   
 }
@@ -143,22 +178,36 @@ function addFromLonLarFeature(position) {
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-async function onRequestHandler(cordinates){
-  console.log(cordinates);
+async function addDotAsync(cordinates,color){
+  //console.log(cordinates);
   await sleep(
-    
+    3500
   );
   positionLocal = true;
     while(positionLocal){
       console.log('calling json map');  
-      addCityFeature(cordinates);
-      await sleep(4000);
+      geoFeature2(cordinates,color);
+      await sleep(3500);
+    }
+  
+}
+async function addDotAsyncNew(cordinates,color){
+  //console.log(cordinates);
+  await sleep(
+    3500
+  );
+  ingresada = true;
+    while(ingresada){
+      console.log('calling json map');  
+      geoFeature2(cordinates,color);
+      await sleep(3500);
+      
     }
   
 }
 ///Flashing
 const duration = 3000;
-function flash(feature) {
+async function flash(feature) {
   const start = Date.now();
   const flashGeom = feature.getGeometry().clone();
   const listenerKey = layer.on('postrender', animate);
@@ -189,9 +238,13 @@ function flash(feature) {
     vectorContext.drawGeometry(flashGeom);
     // tell OpenLayers to continue postrender animation
     map.render();
+    
   }
+  await sleep(3000);
+    source.removeFeature(feature);
 }
 source.on('addfeature', function (e) {
   console.log("added");
+  
   flash(e.feature);
 });
